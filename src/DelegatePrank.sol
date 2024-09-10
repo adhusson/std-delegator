@@ -2,9 +2,8 @@
 pragma solidity >=0.6.2 <0.9.0;
 
 import { CommonBase } from "forge-std/Base.sol";
-import "forge-std/console.sol";
 
-/* 
+/*
   Make arbitrary delegatecalls to an implementation contract.
 
   Supplements vm.prank.
@@ -46,9 +45,9 @@ contract Delegator is CommonBase {
   function etchCodeAndDelegateCall(address dest, bytes memory cd) external payable virtual {
     /* At this point address(this) has the code of Delegator, but needs to be etched with its former code. But rules on cheatcode access for forked contracts make it unable to call vm.etch on itself.
 
-    The clean solution would be to allow cheatcodes to address(this), have it self-etch the new code, then disallow cheatcodes again (otherwise there is a divergence between interpreter state locally and onchain). But there is no vm.disallowCheatcodes cheatcode yet. 
-    
-    Until then we do an ugly hack: call the test contract, which etches the code to address(this), then revert to the current context. At this point the execution continues with the _old_ code.*/
+    The clean solution would be to allow cheatcodes to address(this), have it self-etch the new code, then disallow cheatcodes again (otherwise there is a divergence between interpreter state locally and onchain). But there is no vm.disallowCheatcodes cheatcode yet.
+
+    Until then we do an ugly hack: call the test contract, which etches the original code here. At this point the execution continues with the _old_ code.*/
     delegatePranker.etchLatestCodeToSender();
     assembly ("memory-safe") {
       let result := delegatecall(gas(), dest, add(cd,32), mload(cd), 0, 0)
